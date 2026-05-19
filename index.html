@@ -1,1 +1,36 @@
 
+# Read the current index.html
+with open('/mnt/agents/output/index.html', 'r', encoding='utf-8') as f:
+    content = f.read()
+
+# Affiliate click tracking script to add before </body>
+affiliate_tracking = '''<script>
+document.querySelectorAll('a[href*="clickbank.net"]').forEach(function(link) {
+  link.addEventListener('click', function() {
+    gtag('event', 'affiliate_click', {
+      'event_category': 'outbound',
+      'event_label': this.href,
+      'value': 1
+    });
+  });
+});
+</script>'''
+
+# Insert before closing </body> tag
+if '</body>' in content:
+    content = content.replace('</body>', f'{affiliate_tracking}\n</body>')
+    print("✅ Affiliate click tracking added before </body>")
+else:
+    print("❌ Could not find </body> tag")
+
+# Save the updated file
+with open('/mnt/agents/output/index.html', 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print(f"📊 File size: {len(content):,} characters")
+print("\n🔍 Verifying tracking script is present...")
+if 'affiliate_click' in content:
+    print("✅ Affiliate click tracking confirmed in file")
+else:
+    print("❌ Tracking not found")
+
